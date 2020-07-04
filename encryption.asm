@@ -21,12 +21,12 @@ ExitProcess proto,dwExitCode:dword
 	endMessagePrompt       BYTE 13,10,"Write down the values for N, e, and d. These will be needed for decryption",13,10
 					       BYTE "Below is your encrypted message",13,10,0
 	messagePrompt          BYTE "Enter message to encrypt(max 80 characters): "
-	messageBuffer          BYTE 80 dup(0)	; Stores message to encrypt
+	messageBuffer          BYTE 80 dup(0)		; Stores message to encrypt
 	messageByteCount       DWORD ?			; Stores how many bytes are in messageBuffer
-	encryptedMessageBuffer BYTE 400 dup(0)	; Stored hex string of encrypted message to be converted	
+	encryptedMessageBuffer BYTE 400 dup(0)		; Stored hex string of encrypted message to be converted	
 	encryptedMessageCount  DWORD ?			; Stores how many bytes are in encryptedMessageBuffer
-	encryptedIntBuffer     DWORD 40 dup(0)  ; Stores hex values entered to be decrypted
-	decryptedMessageBuffer BYTE 80 dup(0)	; Stores decrypted message
+	encryptedIntBuffer     DWORD 40 dup(0)  	; Stores hex values entered to be decrypted
+	decryptedMessageBuffer BYTE 80 dup(0)		; Stores decrypted message
 	rsaRange               DWORD 35000		; Sets the limit on rsa values so program does not overflow 32 bits during calculations
 	rsaPrime1              DWORD ?			; One of the prime numbers used to calculate N and NPrime, denoted as p usually
 	rsaPrime2              DWORD ?			; One of the prime numbers used to calculate N and NPrime, denoted as n usually
@@ -39,8 +39,8 @@ ExitProcess proto,dwExitCode:dword
 .code
 
 
-isqrt proc num:dword						; this square root process was found at 
-        mov     eax, num					; https://codereview.stackexchange.com/questions/48847/integer-square-root-in-x86-assembly-nasm
+isqrt proc num:dword					; this square root process was found at 
+        mov     eax, num				; https://codereview.stackexchange.com/questions/48847/integer-square-root-in-x86-assembly-nasm
         xor     ebx, ebx
         bsr     ecx, eax
         and     cl, 0feh
@@ -67,9 +67,9 @@ isqrt endp
 
 
 
-getPrimeNumber proc range:dword					; This process retrieves a random prime number 
-.data											; between 1 and the range value passed to it
-	tempPrime        DWORD ?					; returns in eax 
+getPrimeNumber proc range:dword				; This process retrieves a random prime number 
+.data							; between 1 and the range value passed to it
+	tempPrime        DWORD ?			; returns in eax 
 	tempPrimeSqrt    DWORD ?
 .code
 getPrime:
@@ -94,9 +94,9 @@ jumpIsPrime:
 	ret
 getPrimeNumber endp
 
-gcd proc var1:dword, var2:dword					; This process calculates the greatest commone
-	xor     edx,edx								; denominator for the two operands passed to it
-	cmp     edx,var2							; returns in eax
+gcd proc var1:dword, var2:dword				; This process calculates the greatest commone
+	xor     edx,edx					; denominator for the two operands passed to it
+	cmp     edx,var2				; returns in eax
 	jnz     recall
 	ret
 recall:
@@ -109,10 +109,10 @@ recall:
 	ret
 gcd endp
 
-fullGcd proc var1:dword, var2:dword				; This process accepts two DWORDs and 
-.data											; is used with the inverse process to return 
-	x1     DWORD ?								; the multiplicative inverse of them
-	y1     DWORD ?								; returns in eax
+fullGcd proc var1:dword, var2:dword			; This process accepts two DWORDs and 
+.data							; is used with the inverse process to return 
+	x1     DWORD ?					; the multiplicative inverse of them
+	y1     DWORD ?					; returns in eax
 .code
 	mov     eax,var1
 	mov     ebx,var2
@@ -144,10 +144,10 @@ jumpRecall:
 	ret
 fullGcd endp
 
-inverse proc var1:dword, var2:dword				; This process accepts two DWORDs and 
-	push    var2								; is used with the fullGcd process to return 
-	push    var1								; the multiplicative inverse of them
-	call    fullGcd								; returns in eax
+inverse proc var1:dword, var2:dword			; This process accepts two DWORDs and 
+	push    var2					; is used with the fullGcd process to return 
+	push    var1					; the multiplicative inverse of them
+	call    fullGcd					; returns in eax
 	mov     eax,x
 	cmp     eax,0
 	jg      jumpReturnX
@@ -158,9 +158,9 @@ jumpReturnX:
 inverse endp
 
 modPower proc base:dword, exponent:dword, m:dword
-.data											; This processs accepts three DWORDs and
-	temp    DWORD ?								; calculates the modular exponentiation
-.code											; returns in eax
+.data							; This processs accepts three DWORDs and
+	temp    DWORD ?					; calculates the modular exponentiation
+.code							; returns in eax
 	mov     eax,exponent
 	cmp     eax,0
 	jnz     jumpRecall
@@ -168,19 +168,19 @@ modPower proc base:dword, exponent:dword, m:dword
 	ret
 jumpRecall:
 	mov     eax,m
-	push    eax									; pushes mod to the stack as third operand for recursive call
+	push    eax					; pushes mod to the stack as third operand for recursive call
 	mov     edx,0
 	mov     eax,exponent
 	mov     ebx,2
 	div     ebx				
-	push    eax									; pushes exponent divided by two to the stack
+	push    eax					; pushes exponent divided by two to the stack
 	xor     edx,edx
 	mov     eax,base
 	mul     eax
 	mov     ebx,m
 	div     ebx
-	push    edx									; pushes (base * base) % mod to the stack
-	call    modPower							; recursive call
+	push    edx					; pushes (base * base) % mod to the stack
+	call    modPower				; recursive call
 	mov     temp,eax
 	xor     edx,edx
 	mov     eax,exponent
@@ -190,7 +190,7 @@ jumpRecall:
 	jnz     jumpOddExp
 	mov     eax,temp
 	ret
-jumpOddExp:										; Performs if when the exponent is odd
+jumpOddExp:						; Performs if when the exponent is odd
 	xor     edx,edx
 	mov     eax,temp
 	mov     ebx,base
@@ -231,22 +231,22 @@ newDecrypt:
 	mov     ebx,0
 	mov     eax,0
 	mov		ecx,0 
-WhileDigitD:								;The following ASCII to Hex conversion came from
-											;https://stackoverflow.com/questions/16047113/how-do-i-convert-a-string-representing-a-signed-hex-int-into-its-signed-int-doub
+WhileDigitD:						;The following ASCII to Hex conversion came from
+							;https://stackoverflow.com/questions/16047113/how-do-i-convert-a-string-representing-a-signed-hex-int-into-its-signed-int-doub
     cmp     byte ptr [esi], ' '	
     je      next_char            
 	cmp		ecx,8
 	jz		next_int
     cmp     BYTE PTR [esi],'0'				; compare next character to '0'
-    jb      EndWhileDigitD					; not a digit if smaller than '0'
+    jb      EndWhileDigitD				; not a digit if smaller than '0'
     cmp     BYTE PTR [esi],'9'				; compare to '9'
     ja      TestForHexD      
-    mov     bl,[esi]						; ASCII character to BL
-    sub     bl,'0'							; sub bl,30h -> convert ASCII to binary.
+    mov     bl,[esi]					; ASCII character to BL
+    sub     bl,'0'					; sub bl,30h -> convert ASCII to binary.
 
 shift_eax_by_4_and_add_bl:
-    shl     eax,4							; shift the current value 4 bits to left.
-    or      al,bl							; add the value of the current digit.
+    shl     eax,4					; shift the current value 4 bits to left.
+    or      al,bl					; add the value of the current digit.
 	inc     esi
 	add		ecx,1
     jmp     WhileDigitD
@@ -268,7 +268,7 @@ TestForHexD:
     cmp     BYTE PTR [esi], 'F'
     ja      EndWhileDigitD
     mov     bl,[esi]
-    sub     bl,('A'-0Ah)					; sub bl,55 -> convert ASCII to binary.
+    sub     bl,('A'-0Ah)				; sub bl,55 -> convert ASCII to binary.
     jmp     shift_eax_by_4_and_add_bl
 EndWhileDigitD:
 	mov     esi,OFFSET encryptedIntBuffer
@@ -292,7 +292,7 @@ jumpDecrypt:
 	jmp     jumpDecrypt
 jumpDoneDecryption:
 	mov     edx,OFFSET decryptedMessageBuffer
-	call    WriteString						; Output decrypted message
+	call    WriteString					; Output decrypted message
 	jmp     jumpEnd
 newEncrypt:
 	mov     edx, OFFSET messagePrompt
@@ -311,13 +311,13 @@ newEncrypt:
 	mov     rsaPrime2, eax  
 	mov     ebx,rsaPrime1
 	mul     ebx
-	mov     N,eax							; Stores product of rsaPrime1 and rsaPrime2 in N
+	mov     N,eax						; Stores product of rsaPrime1 and rsaPrime2 in N
 	mov     eax, rsaPrime1
 	sub     eax,1
 	mov     ebx, rsaPrime2
 	sub     ebx,1
 	mul     ebx
-	mov     NPrime, eax						; Stores (rsaPrime1 - 1) * (rsaPrime2 - 1) in NPrime
+	mov     NPrime, eax					; Stores (rsaPrime1 - 1) * (rsaPrime2 - 1) in NPrime
 jumpSetE:
 	mov     eax, NPrime
 	push    eax
@@ -329,16 +329,16 @@ jumpSetE:
 	push    eax
 	call    inverse
 	mov     d,eax
-	mov     esi,OFFSET messageBuffer 		;load address of message
+	mov     esi,OFFSET messageBuffer 			; load address of message
 	mov     edi,OFFSET encryptedIntBuffer 
 jumpEncrypt:
 	mov     al,[esi]
 	cmp     al,0
 	jz      jumpDoneEncryption
 	mov     ecx,0
-	mov     ch,[esi]						; move first letter to ch
+	mov     ch,[esi]					; move first letter to ch
 	add     esi,1
-	mov     cl,[esi]					    ; move second letter to cl
+	mov     cl,[esi]					; move second letter to cl
 	add     esi,1
 	mov     eax,N
 	push    eax
@@ -346,7 +346,7 @@ jumpEncrypt:
 	push    eax
 	push    ecx
 	call    modPower
-	mov     [edi],eax						; move encrypted integer to encryptedIntBuffer
+	mov     [edi],eax					; move encrypted integer to encryptedIntBuffer
 	add     edi,4
 	xor     eax,eax
 	jmp     jumpEncrypt
