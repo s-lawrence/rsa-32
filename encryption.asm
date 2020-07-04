@@ -231,8 +231,8 @@ newDecrypt:
 	mov     ebx,0
 	mov     eax,0
 	mov		ecx,0 
-WhileDigitD:						;The following ASCII to Hex conversion came from
-							;https://stackoverflow.com/questions/16047113/how-do-i-convert-a-string-representing-a-signed-hex-int-into-its-signed-int-doub
+WhileDigitD:						; The following ASCII to Hex conversion came from
+							; https://stackoverflow.com/questions/16047113/how-do-i-convert-a-string-representing-a-signed-hex-int-into-its-signed-int-doub
     cmp     byte ptr [esi], ' '	
     je      next_char            
 	cmp		ecx,8
@@ -292,7 +292,7 @@ jumpDecrypt:
 	jmp     jumpDecrypt
 jumpDoneDecryption:
 	mov     edx,OFFSET decryptedMessageBuffer
-	call    WriteString					; Output decrypted message
+	call    WriteString				; Output decrypted message
 	jmp     jumpEnd
 newEncrypt:
 	mov     edx, OFFSET messagePrompt
@@ -303,7 +303,7 @@ newEncrypt:
 	mov     messageByteCount,eax
 	mov     eax,rsaRange
 	push    eax
-	call    getPrimeNumber					; get prime number between 0 and rsaRange
+	call    getPrimeNumber				; get prime number between 0 and rsaRange
 	mov     rsaPrime1, eax
 	mov     eax,rsaRange
 	push    eax
@@ -311,17 +311,17 @@ newEncrypt:
 	mov     rsaPrime2, eax  
 	mov     ebx,rsaPrime1
 	mul     ebx
-	mov     N,eax						; Stores product of rsaPrime1 and rsaPrime2 in N
+	mov     N,eax					; Stores product of rsaPrime1 and rsaPrime2 in N
 	mov     eax, rsaPrime1
 	sub     eax,1
 	mov     ebx, rsaPrime2
 	sub     ebx,1
 	mul     ebx
-	mov     NPrime, eax					; Stores (rsaPrime1 - 1) * (rsaPrime2 - 1) in NPrime
+	mov     NPrime, eax				; Stores (rsaPrime1 - 1) * (rsaPrime2 - 1) in NPrime
 jumpSetE:
 	mov     eax, NPrime
 	push    eax
-	call    getPrimeNumber 					; returns a prime number between 1 and NPrime
+	call    getPrimeNumber 				; returns a prime number between 1 and NPrime
 	mov     e,eax
 	mov     eax,e
 	mov     ebx,NPrime
@@ -329,16 +329,16 @@ jumpSetE:
 	push    eax
 	call    inverse
 	mov     d,eax
-	mov     esi,OFFSET messageBuffer 			; load address of message
+	mov     esi,OFFSET messageBuffer 		; load address of message
 	mov     edi,OFFSET encryptedIntBuffer 
 jumpEncrypt:
 	mov     al,[esi]
 	cmp     al,0
 	jz      jumpDoneEncryption
 	mov     ecx,0
-	mov     ch,[esi]					; move first letter to ch
+	mov     ch,[esi]				; move first letter to ch
 	add     esi,1
-	mov     cl,[esi]					; move second letter to cl
+	mov     cl,[esi]				; move second letter to cl
 	add     esi,1
 	mov     eax,N
 	push    eax
@@ -346,7 +346,7 @@ jumpEncrypt:
 	push    eax
 	push    ecx
 	call    modPower
-	mov     [edi],eax					; move encrypted integer to encryptedIntBuffer
+	mov     [edi],eax				; move encrypted integer to encryptedIntBuffer
 	add     edi,4
 	xor     eax,eax
 	jmp     jumpEncrypt
